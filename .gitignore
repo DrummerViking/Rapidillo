@@ -27,3 +27,21 @@ npm-debug.log*
 # VS Code (opcional, preferencia personal)
 # ========================
 .vscode/
+
+# ========================
+# Archivos de construcción (si se generan)
+dist/
+build/
+
+# ========================
+# Archivos de cobertura de pruebas (si se generan)
+coverage/
+
+# ========================
+# Otros archivos temporales o de configuración local
+.idea/              # JetBrains IDEs
+*.sublime-workspace # Sublime Text
+*.sublime-project   # Sublime Text
+*.swp               # Vim swap files
+*.bak               # Archivos de respaldo
+*.tmp               # Archivos temporales
