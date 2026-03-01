@@ -45,3 +45,4 @@ coverage/
 *.swp               # Vim swap files
 *.bak               # Archivos de respaldo
 *.tmp               # Archivos temporales
+Tests/               # Carpeta de pruebas (si no se desea incluir)
