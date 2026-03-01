@@ -67,14 +67,18 @@ function getTopOfPile(player) {
 }
 
 // =============================================
-// FUNCTION 4: Get all visible cards from the pile
-// 
+// FUNCTION 4: Get visible cards from the player's OWN pile
+//
+// This function is ONLY for the pile owner.
+// Other players always see just the top card via getTopOfPile().
+//
 // Rule: if the top card is a wild (Joker or K),
-// the next card is also revealed.
+// the next card is also revealed to the owner.
 // This repeats until a non-wild card is found.
 //
 // Example pile: [JOKER, K, 7, 3, ...]
-// Visible cards: [JOKER, K, 7]  ← stops at 7 (not a wild)
+// Visible to owner: [JOKER, K, 7]  ← stops at 7 (not a wild)
+// Visible to others: [JOKER]       ← only the top card
 // =============================================
 function getVisiblePileCards(player) {
   const visible = [];
