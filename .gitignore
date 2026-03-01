@@ -1,0 +1,29 @@
+﻿# ========================
+# Dependencias
+# ========================
+node_modules/
+
+# ========================
+# Variables de entorno (contraseñas, claves secretas)
+# ========================
+.env
+.env.local
+.env.production
+
+# ========================
+# Archivos del sistema
+# ========================
+.DS_Store           # Mac
+Thumbs.db           # Windows
+desktop.ini         # Windows
+
+# ========================
+# Logs (archivos de errores automáticos)
+# ========================
+*.log
+npm-debug.log*
+
+# ========================
+# VS Code (opcional, preferencia personal)
+# ========================
+.vscode/
