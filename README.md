@@ -7,14 +7,13 @@ Play on Web, Android, and iOS from a single codebase.
 
 ## 📖 Table of Contents
 
-- [Game Rules](#game-rules)
-- [Tech Stack](#tech-stack)
-- [Project Architecture](#project-architecture)
-- [Backend — File Reference](#backend--file-reference)
-- [Frontend — File Reference](#frontend--file-reference)
-- [Getting Started](#getting-started)
-- [Contributing](#contributing)
-
+- [Game Rules](#-game-rules)
+- [Tech Stack](#-tech-stack)
+- [Project Architecture](#-project-architecture)
+- [Backend — File Reference](#-backend--file-reference)
+- [Frontend — File Reference](#-frontend--file-reference)
+- [Getting Started](#-getting-started)
+- [Contributing](#-contributing)
 ---
 
 ## 🎮 Game Rules
