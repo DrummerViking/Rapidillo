@@ -93,4 +93,26 @@ export default {
     backHome: 'Volver al inicio',
     turnCount: 'La partida duró {count} turnos',
   },
+
+  // --- AuthScreen ---
+  auth: {
+    loginTitle: 'Bienvenido',
+    registerTitle: 'Crear cuenta',
+    username: 'Usuario',
+    usernamePlaceholder: 'Ingresa tu usuario...',
+    email: 'Email',
+    emailPlaceholder: 'Ingresa tu email...',
+    password: 'Contraseña',
+    passwordPlaceholder: 'Ingresa tu contraseña...',
+    loginButton: 'Iniciar sesión →',
+    registerButton: 'Crear cuenta →',
+    switchToRegister: '¿No tienes cuenta? Registrate',
+    switchToLogin: '¿Ya tienes cuenta? Inicia sesión',
+    loggingIn: 'Iniciando sesión...',
+    registering: 'Creando cuenta...',
+    logoutButton: 'Cerrar sesión',
+    continueAsGuest: 'Continuar como invitado',
+    errorTitle: 'Error',
+    welcomeBack: 'Bienvenido,',
+  },
 };

@@ -3,10 +3,11 @@
 // =============================================
 
 import { io } from 'socket.io-client';
+import { Platform } from 'react-native';
 
-// ⚠️ Replace this IP with your computer's local IP address
-// To find it: run 'ipconfig' in PowerShell and look for 'IPv4 Address'
-const SERVER_URL = 'http://192.168.1.154:3000';
+const SERVER_URL = Platform.OS === 'web'
+  ? 'http://localhost:3000'
+  : 'http://192.168.1.154:3000';
 
 let socket = null;
 

@@ -93,4 +93,26 @@ export default {
     backHome: 'Back to home',
     turnCount: 'Game lasted {count} turns',
   },
+
+  // --- AuthScreen ---
+  auth: {
+    loginTitle: 'Welcome back',
+    registerTitle: 'Create account',
+    username: 'Username',
+    usernamePlaceholder: 'Enter your username...',
+    email: 'Email',
+    emailPlaceholder: 'Enter your email...',
+    password: 'Password',
+    passwordPlaceholder: 'Enter your password...',
+    loginButton: 'Login →',
+    registerButton: 'Create account →',
+    switchToRegister: "Don't have an account? Register",
+    switchToLogin: 'Already have an account? Login',
+    loggingIn: 'Logging in...',
+    registering: 'Creating account...',
+    logoutButton: 'Logout',
+    continueAsGuest: 'Continue as guest',
+    errorTitle: 'Error',
+    welcomeBack: 'Welcome back,',
+  },
 };

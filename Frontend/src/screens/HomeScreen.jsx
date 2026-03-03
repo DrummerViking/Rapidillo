@@ -8,11 +8,13 @@ import {
   StyleSheet, SafeAreaView, Alert, KeyboardAvoidingView, Platform, Switch
 } from 'react-native';
 import useSettingsStore from '../store/settingsStore';
+import useAuthStore from '../store/authStore';
 
 export default function HomeScreen({ navigation }) {
   const [playerName, setPlayerName] = useState('');
   const [gameId, setGameId] = useState('');
   const [mode, setMode] = useState(null); // 'create' | 'join' | null
+  const { user, logout } = useAuthStore();
 
   // --- Theme ---
   const { theme, isDarkMode, toggleTheme, t, language, languages, setLanguage } = useSettingsStore();
@@ -85,6 +87,18 @@ export default function HomeScreen({ navigation }) {
         >
           <Text style={styles.helpButtonText}>❓ {t('help.title')}</Text>
         </TouchableOpacity>
+
+        {/* Logged in user info */}
+        {user && (
+          <View style={styles.userBadge}>
+            <Text style={styles.userBadgeText}>
+              👤 {t('auth.welcomeBack')} {user.username}
+            </Text>
+            <TouchableOpacity onPress={logout}>
+              <Text style={styles.logoutText}>{t('auth.logoutButton')}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Player name input */}
         <View style={styles.inputContainer}>
@@ -203,6 +217,24 @@ function makeStyles(theme) {
     helpButtonText: {
       color: theme.textSecondary,
       fontSize: 14,
+    },
+    userBadge: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: theme.backgroundCard,
+      borderRadius: 12,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    userBadgeText: {
+      color: theme.textPrimary,
+      fontSize: 14,
+    },
+    logoutText: {
+      color: theme.accent,
+      fontSize: 13,
     },
     subtitle: {
       fontSize: 16,

@@ -11,12 +11,40 @@ const {
   updateLastLogin
 } = require('./queries');
 
-const JWT_SECRET  = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES = '7d'; // Token valid for 7 days
 
 // =============================================
 // FUNCTION 1: Register a new user
 // =============================================
+// =============================================
+// Password strength validation
+// Rules:
+// - Minimum 8 characters
+// - At least one lowercase letter
+// - At least one uppercase letter
+// - At least one number
+// - At least one special character
+// =============================================
+function validatePasswordStrength(password) {
+  if (!password || password.length < 10) {
+    return { valid: false, reason: 'Password must be at least 10 characters.' };
+  }
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, reason: 'Password must contain at least one lowercase letter.' };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, reason: 'Password must contain at least one uppercase letter.' };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, reason: 'Password must contain at least one number.' };
+  }
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    return { valid: false, reason: 'Password must contain at least one special character (!@#$%^&*...).' };
+  }
+  return { valid: true };
+}
+
 async function register(username, email, password) {
 
   // Validate inputs
@@ -26,8 +54,9 @@ async function register(username, email, password) {
   if (!email || !email.includes('@')) {
     return { success: false, reason: 'Invalid email address.' };
   }
-  if (!password || password.length < 10) {
-    return { success: false, reason: 'Password must be at least 10 characters.' };
+  const passwordCheck = validatePasswordStrength(password);
+  if (!passwordCheck.valid) {
+    return { success: false, reason: passwordCheck.reason };
   }
 
   // Check if username already exists
@@ -79,9 +108,9 @@ async function login(username, password) {
   return {
     success: true,
     user: {
-      id:       user.id,
+      id: user.id,
       username: user.username,
-      email:    user.email,
+      email: user.email,
     },
     token
   };
@@ -99,4 +128,4 @@ function verifyToken(token) {
   }
 }
 
-module.exports = { register, login, verifyToken };
+module.exports = { register, login, verifyToken, validatePasswordStrength };

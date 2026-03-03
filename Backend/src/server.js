@@ -40,6 +40,16 @@ app.get('/', (req, res) => {
   });
 });
 
+// Add cors package
+const cors = require('cors');
+
+// Enable CORS for all origins (development only)
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // --- Auth routes ---
 app.post('/auth/register', async (req, res) => {
   try {
