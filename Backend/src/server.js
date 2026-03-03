@@ -2,8 +2,11 @@
 // server.js — Main server entry point
 // =============================================
 
+require('dotenv').config();
+const { register, login } = require('./db/auth');
+
 const express = require('express');
-const http    = require('http');
+const http = require('http');
 const { Server } = require('socket.io');
 
 const { roomHandler } = require('./sockets/roomHandler');
@@ -12,9 +15,9 @@ const { gameHandler } = require('./sockets/gameHandler');
 // =============================================
 // SERVER SETUP
 // =============================================
-const app    = express();
+const app = express();
 const server = http.createServer(app);
-const io     = new Server(server, {
+const io = new Server(server, {
   cors: {
     origin: '*', // Allow all origins for now (we'll restrict this in production)
     methods: ['GET', 'POST']
@@ -35,6 +38,47 @@ app.get('/', (req, res) => {
     message: 'Rapidillo game server is running 🃏',
     timestamp: new Date().toISOString()
   });
+});
+
+// --- Auth routes ---
+app.post('/auth/register', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    const result = await register(username, email, password);
+
+    if (!result.success) {
+      return res.status(400).json({ error: result.reason });
+    }
+
+    res.status(201).json({
+      message: 'Account created successfully!',
+      user: result.user,
+      token: result.token
+    });
+  } catch (err) {
+    console.error('Register error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+app.post('/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const result = await login(username, password);
+
+    if (!result.success) {
+      return res.status(401).json({ error: result.reason });
+    }
+
+    res.json({
+      message: 'Login successful!',
+      user: result.user,
+      token: result.token
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
 });
 
 // =============================================

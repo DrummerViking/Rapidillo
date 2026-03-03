@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, FlatList, Alert, ActivityIndicator
+  SafeAreaView, FlatList, Alert, ActivityIndicator, Platform
 } from 'react-native';
 import useSettingsStore from '../store/settingsStore';
 import { getSocket, connectSocket } from '../sockets/socketClient';
@@ -13,18 +13,29 @@ import { getSocket, connectSocket } from '../sockets/socketClient';
 export default function LobbyScreen({ navigation, route }) {
   const { playerName, gameId, isHost } = route.params;
 
-  const [players, setPlayers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [statusMsg, setStatusMsg] = useState(t('lobby.connecting'));
-
+  // ✅ Store FIRST — before any useState that uses t()
   const { theme, t, language, languages, setLanguage } = useSettingsStore();
   const styles = makeStyles(theme);
+
+  // ✅ Now t() is available
+  const [players, setPlayers] = useState([{ id: 'me', name: playerName }]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [statusMsg, setStatusMsg] = useState(t('lobby.connecting'));
 
   // =============================================
   // CONNECT TO SERVER AND SET UP SOCKET EVENTS
   // =============================================
   useEffect(() => {
-    const socket = connectSocket();
+    let socket;
+
+    try {
+      socket = connectSocket();
+    } catch (error) {
+      console.error('Socket connection error:', error);
+      setIsLoading(false);
+      setStatusMsg('Could not connect to server. Check your network settings.');
+      return;
+    }
 
     // --- Connected to server ---
     socket.on('connect', () => {
@@ -86,6 +97,14 @@ export default function LobbyScreen({ navigation, route }) {
   // LEAVE ROOM
   // =============================================
   function handleLeave() {
+    // On web, Alert buttons don't work — navigate directly
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(t('lobby.leaveMessage'));
+      if (confirmed) navigation.goBack();
+      return;
+    }
+
+    // On mobile, use native Alert with buttons
     Alert.alert(
       t('lobby.leaveTitle'),
       t('lobby.leaveMessage'),

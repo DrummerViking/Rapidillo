@@ -112,6 +112,11 @@ Rapidillo/
 └── CONTRIBUTING.md
 ```
 
+### Platform considerations
+- `Alert.alert` with buttons is not supported on Web — use `window.confirm()` instead.
+- Always check `Platform.OS` when using native dialogs.
+
+
 ### Communication Flow
 ```
 [Player taps "Play card"]
