@@ -5,29 +5,41 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, SafeAreaView, Alert, KeyboardAvoidingView, Platform, Switch
+  StyleSheet, SafeAreaView, Alert, KeyboardAvoidingView,
+  Platform, Switch
 } from 'react-native';
 import useSettingsStore from '../store/settingsStore';
-import useAuthStore from '../store/authStore';
+import useAuthStore     from '../store/authStore';
+import LanguagePicker   from '../components/LanguagePicker';
 
 export default function HomeScreen({ navigation }) {
   const [playerName, setPlayerName] = useState('');
-  const [gameId, setGameId] = useState('');
-  const [mode, setMode] = useState(null); // 'create' | 'join' | null
-  const { user, logout } = useAuthStore();
+  const [gameId,     setGameId]     = useState('');
+  const [mode,       setMode]       = useState(null); // 'create' | 'join' | null
 
-  // --- Theme ---
-  const { theme, isDarkMode, toggleTheme, t, language, languages, setLanguage } = useSettingsStore();
-  const styles = makeStyles(theme);
+  const { theme, isDarkMode, toggleTheme, t } = useSettingsStore();
+  const { user, logout }                      = useAuthStore();
+  const styles                                = makeStyles(theme);
 
-  // --- Validate inputs before proceeding ---
+  // =============================================
+  // HANDLERS
+  // =============================================
   function handleProceed() {
     if (!playerName.trim()) {
-      Alert.alert('Missing name', t('home.nameRequired'));
+      if (Platform.OS === 'web') {
+        window.alert(t('home.errorNoName'));
+      } else {
+        Alert.alert('Error', t('home.errorNoName'));
+      }
       return;
     }
+
     if (mode === 'join' && !gameId.trim()) {
-      Alert.alert('Missing room code', t('home.errorNoCode'));
+      if (Platform.OS === 'web') {
+        window.alert(t('home.errorNoCode'));
+      } else {
+        Alert.alert('Error', t('home.errorNoCode'));
+      }
       return;
     }
 
@@ -37,11 +49,14 @@ export default function HomeScreen({ navigation }) {
 
     navigation.navigate('Lobby', {
       playerName: playerName.trim(),
-      gameId: resolvedGameId,
-      isHost: mode === 'create'
+      gameId:     resolvedGameId,
+      isHost:     mode === 'create'
     });
   }
 
+  // =============================================
+  // RENDER
+  // =============================================
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -49,29 +64,20 @@ export default function HomeScreen({ navigation }) {
         style={styles.inner}
       >
 
-        {/* Theme toggle */}
-        <View style={styles.themeToggle}>
-          <Text style={styles.themeLabel}>☀️</Text>
-          <Switch
-            value={isDarkMode}
-            onValueChange={toggleTheme}
-            trackColor={{ false: '#e2e8f0', true: '#e94560' }}
-            thumbColor={isDarkMode ? '#ffffff' : '#ffffff'}
-          />
-          <Text style={styles.themeLabel}>🌙</Text>
-        </View>
+        {/* Top controls — language picker + theme toggle */}
+        <View style={styles.topControls}>
+          <LanguagePicker />
 
-        {/* Language selector */}
-        <View style={styles.langSelector}>
-          {Object.entries(languages).map(([code, lang]) => (
-            <TouchableOpacity
-              key={code}
-              onPress={() => setLanguage(code)}
-              style={[styles.langButton, language === code && styles.langButtonActive]}
-            >
-              <Text style={styles.langFlag}>{lang.flag}</Text>
-            </TouchableOpacity>
-          ))}
+          <View style={styles.themeToggle}>
+            <Text style={styles.themeLabel}>☀️</Text>
+            <Switch
+              value={isDarkMode}
+              onValueChange={toggleTheme}
+              trackColor={{ false: '#e2e8f0', true: '#e94560' }}
+              thumbColor="#ffffff"
+            />
+            <Text style={styles.themeLabel}>🌙</Text>
+          </View>
         </View>
 
         {/* Title */}
@@ -88,7 +94,7 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.helpButtonText}>❓ {t('help.title')}</Text>
         </TouchableOpacity>
 
-        {/* Logged in user info */}
+        {/* Logged in user badge */}
         {user && (
           <View style={styles.userBadge}>
             <Text style={styles.userBadgeText}>
@@ -98,6 +104,18 @@ export default function HomeScreen({ navigation }) {
               <Text style={styles.logoutText}>{t('auth.logoutButton')}</Text>
             </TouchableOpacity>
           </View>
+        )}
+
+        {/* Profile button — only if logged in */}
+        {user && (
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <Text style={styles.profileButtonText}>
+              📊 {t('home.viewProfile')}
+            </Text>
+          </TouchableOpacity>
         )}
 
         {/* Player name input */}
@@ -114,7 +132,7 @@ export default function HomeScreen({ navigation }) {
           />
         </View>
 
-        {/* Mode selection */}
+        {/* Mode selection — only show if name is entered */}
         {playerName.trim().length > 0 && (
           <View style={styles.modeContainer}>
             <Text style={styles.label}>{t('home.whatToDo')}</Text>
@@ -124,7 +142,7 @@ export default function HomeScreen({ navigation }) {
               onPress={() => setMode('create')}
             >
               <Text style={[styles.modeButtonText, mode === 'create' && styles.modeButtonTextActive]}>
-                🏠 {t('home.createRoom')}
+                {t('home.createRoom')}
               </Text>
             </TouchableOpacity>
 
@@ -133,13 +151,13 @@ export default function HomeScreen({ navigation }) {
               onPress={() => setMode('join')}
             >
               <Text style={[styles.modeButtonText, mode === 'join' && styles.modeButtonTextActive]}>
-                🚪 {t('home.joinRoom')}
+                {t('home.joinRoom')}
               </Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* Room code input */}
+        {/* Room code input — only show if joining */}
         {mode === 'join' && (
           <View style={styles.inputContainer}>
             <Text style={styles.label}>{t('home.roomCode')}</Text>
@@ -155,12 +173,31 @@ export default function HomeScreen({ navigation }) {
           </View>
         )}
 
-        {/* Proceed button */}
+        {/* Proceed button — only show if mode is selected */}
         {mode && (
           <TouchableOpacity style={styles.proceedButton} onPress={handleProceed}>
             <Text style={styles.proceedButtonText}>
-              {mode === 'create' ? `${t('home.createButton')}` : `${t('home.joinButton')}`}
+              {mode === 'create' ? t('home.createButton') : t('home.joinButton')}
             </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* DEBUG BUTTON — remove before publishing */}
+        {__DEV__ && (
+          <TouchableOpacity
+            style={[styles.proceedButton, { backgroundColor: '#888', marginTop: 0 }]}
+            onPress={() => navigation.navigate('Result', {
+              winner:     { name: 'testuser', id: 'player-1' },
+              message:    '🏆 testuser wins!',
+              turnCount:  42,
+              playerName: 'testuser',
+              finalStats: [
+                { id: 'player-1', name: 'testuser',     position: 1, pileCount: 0, isWinner: true,  diceRoll: 6 },
+                { id: 'player-2', name: 'guest-player', position: 2, pileCount: 8, isWinner: false, diceRoll: 3 },
+              ]
+            })}
+          >
+            <Text style={styles.proceedButtonText}>🧪 Test Result Screen</Text>
           </TouchableOpacity>
         )}
 
@@ -170,83 +207,102 @@ export default function HomeScreen({ navigation }) {
 }
 
 // =============================================
-// STYLES — Dynamic based on theme
+// STYLES
 // =============================================
 function makeStyles(theme) {
   return StyleSheet.create({
     container: {
-      flex: 1,
+      flex:            1,
       backgroundColor: theme.background,
     },
     inner: {
-      flex: 1,
-      justifyContent: 'center',
+      flex:              1,
+      justifyContent:    'center',
       paddingHorizontal: 32,
-      gap: 24,
+      gap:               20,
+    },
+    topControls: {
+      position:       'absolute',
+      top:            16,
+      left:           16,
+      right:          16,
+      flexDirection:  'row',
+      justifyContent: 'space-between',
+      alignItems:     'center',
+      zIndex:         10,
     },
     themeToggle: {
-      position: 'absolute',
-      top: 16,
-      right: 16,
       flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
+      alignItems:    'center',
+      gap:           8,
     },
     themeLabel: {
       fontSize: 18,
     },
     titleContainer: {
-      alignItems: 'center',
-      marginBottom: 16,
+      alignItems:   'center',
+      marginBottom: 4,
     },
     title: {
-      fontSize: 48,
-      fontWeight: 'bold',
-      color: theme.textPrimary,
+      fontSize:      48,
+      fontWeight:    'bold',
+      color:         theme.textPrimary,
       letterSpacing: 2,
     },
-    helpButton: {
-      alignSelf: 'center',
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 20,
-      borderWidth: 1,
-      borderColor: theme.border,
-      backgroundColor: theme.backgroundCard,
-    },
-    helpButtonText: {
-      color: theme.textSecondary,
-      fontSize: 14,
-    },
-    userBadge: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      backgroundColor: theme.backgroundCard,
-      borderRadius: 12,
-      padding: 12,
-      borderWidth: 1,
-      borderColor: theme.border,
-    },
-    userBadgeText: {
-      color: theme.textPrimary,
-      fontSize: 14,
-    },
-    logoutText: {
-      color: theme.accent,
-      fontSize: 13,
-    },
     subtitle: {
-      fontSize: 16,
-      color: theme.textSecondary,
-      marginTop: 4,
+      fontSize:      16,
+      color:         theme.textSecondary,
+      marginTop:     4,
       letterSpacing: 4,
       textTransform: 'uppercase',
     },
-    label: {
-      color: theme.textSecondary,
+    helpButton: {
+      alignSelf:       'center',
+      paddingHorizontal: 16,
+      paddingVertical:   8,
+      borderRadius:    20,
+      borderWidth:     1,
+      borderColor:     theme.border,
+      backgroundColor: theme.backgroundCard,
+    },
+    helpButtonText: {
+      color:    theme.textSecondary,
+      fontSize: 14,
+    },
+    userBadge: {
+      flexDirection:  'row',
+      justifyContent: 'space-between',
+      alignItems:     'center',
+      backgroundColor: theme.backgroundCard,
+      borderRadius:   12,
+      padding:        12,
+      borderWidth:    1,
+      borderColor:    theme.border,
+    },
+    userBadgeText: {
+      color:    theme.textPrimary,
+      fontSize: 14,
+    },
+    logoutText: {
+      color:    theme.accent,
       fontSize: 13,
-      marginBottom: 8,
+    },
+    profileButton: {
+      backgroundColor: theme.backgroundCard,
+      borderRadius:    12,
+      paddingVertical: 12,
+      alignItems:      'center',
+      borderWidth:     1,
+      borderColor:     theme.border,
+    },
+    profileButtonText: {
+      color:    theme.textSecondary,
+      fontSize: 14,
+    },
+    label: {
+      color:         theme.textSecondary,
+      fontSize:      13,
+      marginBottom:  8,
       textTransform: 'uppercase',
       letterSpacing: 1,
     },
@@ -254,40 +310,40 @@ function makeStyles(theme) {
       gap: 4,
     },
     input: {
-      backgroundColor: theme.backgroundInput,
-      color: theme.textPrimary,
-      borderRadius: 12,
+      backgroundColor:   theme.backgroundInput,
+      color:             theme.textPrimary,
+      borderRadius:      12,
       paddingHorizontal: 16,
-      paddingVertical: 14,
-      fontSize: 16,
-      borderWidth: 1,
-      borderColor: theme.border,
+      paddingVertical:   14,
+      fontSize:          16,
+      borderWidth:       1,
+      borderColor:       theme.border,
     },
     inputCode: {
       letterSpacing: 4,
-      textAlign: 'center',
-      fontSize: 20,
-      fontWeight: 'bold',
+      textAlign:     'center',
+      fontSize:      20,
+      fontWeight:    'bold',
     },
     modeContainer: {
       gap: 12,
     },
     modeButton: {
       backgroundColor: theme.backgroundCard,
-      borderRadius: 12,
+      borderRadius:    12,
       paddingVertical: 16,
       paddingHorizontal: 20,
-      borderWidth: 1,
-      borderColor: theme.border,
-      alignItems: 'center',
+      borderWidth:     1,
+      borderColor:     theme.border,
+      alignItems:      'center',
     },
     modeButtonActive: {
-      borderColor: theme.borderActive,
+      borderColor:     theme.borderActive,
       backgroundColor: theme.background,
     },
     modeButtonText: {
-      color: theme.textMuted,
-      fontSize: 16,
+      color:      theme.textMuted,
+      fontSize:   16,
       fontWeight: '600',
     },
     modeButtonTextActive: {
@@ -295,36 +351,16 @@ function makeStyles(theme) {
     },
     proceedButton: {
       backgroundColor: theme.accent,
-      borderRadius: 12,
+      borderRadius:    12,
       paddingVertical: 18,
-      alignItems: 'center',
-      marginTop: 8,
+      alignItems:      'center',
+      marginTop:       8,
     },
     proceedButtonText: {
-      color: theme.accentText,
-      fontSize: 18,
+      color:      theme.accentText,
+      fontSize:   18,
       fontWeight: 'bold',
       letterSpacing: 1,
-    },
-    langSelector: {
-      position: 'absolute',
-      top: 16,
-      left: 16,
-      flexDirection: 'row',
-      gap: 8,
-    },
-    langButton: {
-      padding: 6,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: 'transparent',
-    },
-    langButtonActive: {
-      borderColor: theme.accent,
-      backgroundColor: theme.backgroundCard,
-    },
-    langFlag: {
-      fontSize: 20,
     },
   });
 }

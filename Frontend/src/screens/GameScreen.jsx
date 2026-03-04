@@ -8,13 +8,13 @@ import {
   ScrollView, TouchableOpacity, Alert, Platform, Modal
 } from 'react-native';
 
-import useSettingsStore        from '../store/settingsStore';
-import { getSocket }           from '../sockets/socketClient';
-import Card                    from '../components/Card';
-import Staircase               from '../components/Staircase';
-import PlayerPile              from '../components/PlayerPile';
-import DiscardRow              from '../components/DiscardRow';
-import PlayerHand              from '../components/PlayerHand';
+import useSettingsStore from '../store/settingsStore';
+import { getSocket } from '../sockets/socketClient';
+import Card from '../components/Card';
+import Staircase from '../components/Staircase';
+import PlayerPile from '../components/PlayerPile';
+import DiscardRow from '../components/DiscardRow';
+import PlayerHand from '../components/PlayerHand';
 
 export default function GameScreen({ navigation, route }) {
   const { turnOrder, yourView, gameId, playerName } = route.params;
@@ -22,13 +22,13 @@ export default function GameScreen({ navigation, route }) {
   // =============================================
   // LOCAL STATE
   // =============================================
-  const [gameView,        setGameView]        = useState(yourView);
-  const [selectedCard,    setSelectedCard]    = useState(null);   // { card, source, rowIndex? }
-  const [turnSummary,     setTurnSummary]     = useState(null);
-  const [statusMsg,       setStatusMsg]       = useState('');
-  const [isMyTurn,        setIsMyTurn]        = useState(false);
+  const [gameView, setGameView] = useState(yourView);
+  const [selectedCard, setSelectedCard] = useState(null);   // { card, source, rowIndex? }
+  const [turnSummary, setTurnSummary] = useState(null);
+  const [statusMsg, setStatusMsg] = useState('');
+  const [isMyTurn, setIsMyTurn] = useState(false);
   const [wildModalVisible, setWildModalVisible] = useState(false);
-  const [pendingDiscard,   setPendingDiscard]   = useState(null); // { card, rowIndex }
+  const [pendingDiscard, setPendingDiscard] = useState(null); // { card, rowIndex }
 
   const { theme, t } = useSettingsStore();
   const styles = makeStyles(theme);
@@ -74,24 +74,25 @@ export default function GameScreen({ navigation, route }) {
       }
     }
 
-    function onGameOver({ winner, message }) {
+    function onGameOver({ winner, message, turnCount, finalStats }) {
       navigation.navigate('Result', {
         winner,
         message,
-        turnCount: turnSummary?.turnNumber || 0,
+        turnCount,
+        finalStats,  // ← new
         gameId,
         playerName,
       });
     }
 
-    socket.on('gameUpdated',    onGameUpdated);
+    socket.on('gameUpdated', onGameUpdated);
     socket.on('actionRejected', onActionRejected);
-    socket.on('gameOver',       onGameOver);
+    socket.on('gameOver', onGameOver);
 
     return () => {
-      socket.off('gameUpdated',    onGameUpdated);
+      socket.off('gameUpdated', onGameUpdated);
       socket.off('actionRejected', onActionRejected);
-      socket.off('gameOver',       onGameOver);
+      socket.off('gameOver', onGameOver);
     };
   }, [turnSummary]);
 
@@ -137,7 +138,7 @@ export default function GameScreen({ navigation, route }) {
   // Select the top card from a discard row
   function handleSelectFromDiscard(rowIndex) {
     if (!isMyTurn) return;
-    const row     = myPlayer?.discardRows?.[rowIndex];
+    const row = myPlayer?.discardRows?.[rowIndex];
     const topCard = row?.[row.length - 1];
     if (!topCard) return;
 
@@ -154,10 +155,10 @@ export default function GameScreen({ navigation, route }) {
     if (!selectedCard || !isMyTurn) return;
 
     sendAction({
-      type:           'playCard',
-      cardId:         selectedCard.card.id,
-      source:         selectedCard.source,
-      rowIndex:       selectedCard.rowIndex ?? null,
+      type: 'playCard',
+      cardId: selectedCard.card.id,
+      source: selectedCard.source,
+      rowIndex: selectedCard.rowIndex ?? null,
       staircaseIndex,
     });
 
@@ -182,8 +183,8 @@ export default function GameScreen({ navigation, route }) {
     }
 
     sendAction({
-      type:    'discard',
-      cardId:  selectedCard.card.id,
+      type: 'discard',
+      cardId: selectedCard.card.id,
       rowIndex,
       assignedValue: null,
     });
@@ -196,9 +197,9 @@ export default function GameScreen({ navigation, route }) {
     if (!pendingDiscard) return;
 
     sendAction({
-      type:          'discard',
-      cardId:        pendingDiscard.card.id,
-      rowIndex:      pendingDiscard.rowIndex,
+      type: 'discard',
+      cardId: pendingDiscard.card.id,
+      rowIndex: pendingDiscard.rowIndex,
       assignedValue,
     });
 
@@ -439,25 +440,25 @@ export default function GameScreen({ navigation, route }) {
 function makeStyles(theme) {
   return StyleSheet.create({
     container: {
-      flex:            1,
+      flex: 1,
       backgroundColor: theme.background,
     },
     loadingContainer: {
-      flex:           1,
+      flex: 1,
       justifyContent: 'center',
-      alignItems:     'center',
+      alignItems: 'center',
     },
     loadingText: {
-      color:    theme.textSecondary,
+      color: theme.textSecondary,
       fontSize: 16,
     },
     statusBar: {
-      flexDirection:   'row',
-      justifyContent:  'space-between',
-      alignItems:      'center',
-      paddingVertical:   10,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 10,
       paddingHorizontal: 16,
-      backgroundColor:   theme.backgroundCard,
+      backgroundColor: theme.backgroundCard,
       borderBottomWidth: 1,
       borderBottomColor: theme.border,
     },
@@ -466,13 +467,13 @@ function makeStyles(theme) {
       borderBottomColor: theme.accent,
     },
     statusText: {
-      color:      theme.textPrimary,
-      fontSize:   14,
+      color: theme.textPrimary,
+      fontSize: 14,
       fontWeight: '600',
-      flex:       1,
+      flex: 1,
     },
     deckCount: {
-      color:    theme.textMuted,
+      color: theme.textMuted,
       fontSize: 13,
     },
     scroll: {
@@ -480,132 +481,132 @@ function makeStyles(theme) {
     },
     scrollContent: {
       padding: 12,
-      gap:     12,
+      gap: 12,
     },
     othersContainer: {
       gap: 10,
     },
     otherPlayer: {
       backgroundColor: theme.backgroundCard,
-      borderRadius:    12,
-      padding:         12,
-      borderWidth:     1,
-      borderColor:     theme.border,
-      gap:             8,
+      borderRadius: 12,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: theme.border,
+      gap: 8,
     },
     otherPlayerActive: {
       borderColor: theme.accent,
       borderWidth: 2,
     },
     otherPlayerName: {
-      color:      theme.textPrimary,
+      color: theme.textPrimary,
       fontWeight: 'bold',
-      fontSize:   14,
+      fontSize: 14,
     },
     otherHandCount: {
-      color:    theme.textMuted,
+      color: theme.textMuted,
       fontSize: 12,
     },
     otherDiscardRows: {
       flexDirection: 'row',
-      gap:           6,
+      gap: 6,
     },
     staircasesContainer: {
       gap: 8,
     },
     sectionLabel: {
-      color:         theme.textSecondary,
-      fontSize:      12,
+      color: theme.textSecondary,
+      fontSize: 12,
       textTransform: 'uppercase',
       letterSpacing: 1,
-      marginBottom:  4,
+      marginBottom: 4,
     },
     emptyStaircases: {
-      padding:         20,
-      alignItems:      'center',
+      padding: 20,
+      alignItems: 'center',
       backgroundColor: theme.backgroundCard,
-      borderRadius:    12,
-      borderWidth:     1,
-      borderColor:     theme.border,
-      borderStyle:     'dashed',
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderStyle: 'dashed',
     },
     emptyStaircasesText: {
-      color:    theme.textMuted,
+      color: theme.textMuted,
       fontSize: 13,
     },
     newStaircaseButton: {
       backgroundColor: theme.accent,
-      borderRadius:    10,
-      padding:         12,
-      alignItems:      'center',
+      borderRadius: 10,
+      padding: 12,
+      alignItems: 'center',
     },
     newStaircaseText: {
-      color:      '#fff',
+      color: '#fff',
       fontWeight: 'bold',
-      fontSize:   14,
+      fontSize: 14,
     },
     myAreaTop: {
       flexDirection: 'row',
-      gap:           12,
-      alignItems:    'flex-start',
+      gap: 12,
+      alignItems: 'flex-start',
     },
     discardRowsContainer: {
       flex: 1,
-      gap:  6,
+      gap: 6,
     },
     discardRowsGrid: {
       flexDirection: 'row',
-      gap:           6,
-      flexWrap:      'wrap',
+      gap: 6,
+      flexWrap: 'wrap',
     },
     modalOverlay: {
-      flex:            1,
+      flex: 1,
       backgroundColor: 'rgba(0,0,0,0.6)',
-      justifyContent:  'center',
-      alignItems:      'center',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     modalContainer: {
       backgroundColor: theme.backgroundCard,
-      borderRadius:    16,
-      padding:         24,
-      width:           '85%',
-      gap:             16,
+      borderRadius: 16,
+      padding: 24,
+      width: '85%',
+      gap: 16,
     },
     modalTitle: {
-      color:      theme.textPrimary,
-      fontSize:   16,
+      color: theme.textPrimary,
+      fontSize: 16,
       fontWeight: 'bold',
-      textAlign:  'center',
+      textAlign: 'center',
     },
     modalValues: {
       flexDirection: 'row',
-      flexWrap:      'wrap',
-      gap:           8,
+      flexWrap: 'wrap',
+      gap: 8,
       justifyContent: 'center',
     },
     modalValueButton: {
-      width:           44,
-      height:          44,
-      borderRadius:    10,
+      width: 44,
+      height: 44,
+      borderRadius: 10,
       backgroundColor: theme.background,
-      borderWidth:     1,
-      borderColor:     theme.border,
-      justifyContent:  'center',
-      alignItems:      'center',
+      borderWidth: 1,
+      borderColor: theme.border,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     modalValueText: {
-      color:      theme.textPrimary,
-      fontSize:   16,
+      color: theme.textPrimary,
+      fontSize: 16,
       fontWeight: 'bold',
     },
     modalCancel: {
       paddingVertical: 12,
-      alignItems:      'center',
-      borderTopWidth:  1,
-      borderTopColor:  theme.border,
+      alignItems: 'center',
+      borderTopWidth: 1,
+      borderTopColor: theme.border,
     },
     modalCancelText: {
-      color:    theme.textSecondary,
+      color: theme.textSecondary,
       fontSize: 15,
     },
   });

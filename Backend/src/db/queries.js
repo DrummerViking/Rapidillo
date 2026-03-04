@@ -3,7 +3,7 @@
 // =============================================
 
 const { query } = require('./db');
-const bcrypt    = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 
 // =============================================
 // USER QUERIES
@@ -72,14 +72,14 @@ async function saveGame(gameId, playerCount, winnerId, turnCount) {
 }
 
 // Save all participants of a game
+// userId can be null for guest players
 async function saveGameParticipants(gameDbId, participants) {
-  // participants = [{ userId, diceRoll, finalPile, position }, ...]
   for (const p of participants) {
     await query(
       `INSERT INTO game_participants
          (game_id, user_id, dice_roll, final_pile, position)
        VALUES ($1, $2, $3, $4, $5)`,
-      [gameDbId, p.userId, p.diceRoll, p.finalPile, p.position]
+      [gameDbId, p.userId || null, p.diceRoll, p.finalPile, p.position]
     );
   }
 }

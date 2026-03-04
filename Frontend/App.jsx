@@ -11,6 +11,7 @@ import LobbyScreen  from './src/screens/LobbyScreen';
 import GameScreen   from './src/screens/GameScreen';
 import ResultScreen from './src/screens/ResultScreen';
 import HelpScreen   from './src/screens/HelpScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +31,7 @@ export default function App() {
         <Stack.Screen name="Game"   component={GameScreen}   />
         <Stack.Screen name="Result" component={ResultScreen} />
         <Stack.Screen name="Help"   component={HelpScreen}   />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

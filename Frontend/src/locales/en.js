@@ -20,6 +20,7 @@ export default {
     joinButton: 'Join room →',
     errorNoName: 'Please enter your name before continuing.',
     errorNoCode: 'Please enter a room code to join.',
+    viewProfile: 'View my profile & stats',
   },
 
   // --- HelpScreen ---
@@ -114,5 +115,26 @@ export default {
     continueAsGuest: 'Continue as guest',
     errorTitle: 'Error',
     welcomeBack: 'Welcome back,',
+  },
+
+  // --- ProfileScreen ---
+  profile: {
+    title: 'My Profile',
+    stats: 'Statistics',
+    history: 'Game History',
+    gamesPlayed: 'Games played',
+    gamesWon: 'Games won',
+    winRate: 'Win rate',
+    avgTurns: 'Avg. turns per game',
+    bestGame: 'Best game',
+    turns: 'turns',
+    noHistory: 'No games played yet.',
+    position: 'Position',
+    players: 'Players',
+    date: 'Date',
+    notLoggedIn: 'You must be logged in to view your profile.',
+    loading: 'Loading profile...',
+    winner: '🏆 Winner',
+    guest: 'Guest player',
   },
 };

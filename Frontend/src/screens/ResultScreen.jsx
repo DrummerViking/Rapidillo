@@ -5,13 +5,13 @@
 import { useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView,
-  TouchableOpacity, Animated
+  TouchableOpacity, Animated, ScrollView
 } from 'react-native';
 import useSettingsStore from '../store/settingsStore';
 import { disconnectSocket } from '../sockets/socketClient';
 
 export default function ResultScreen({ navigation, route }) {
-  const { winner, message, turnCount, playerName } = route.params;
+  const { winner, message, turnCount, playerName, finalStats } = route.params;
 
   const { theme, t } = useSettingsStore();
   const styles = makeStyles(theme);
@@ -25,10 +25,8 @@ export default function ResultScreen({ navigation, route }) {
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Disconnect socket when game ends
     disconnectSocket();
 
-    // Animate the winner card in
     Animated.sequence([
       Animated.delay(300),
       Animated.parallel([
@@ -48,14 +46,47 @@ export default function ResultScreen({ navigation, route }) {
   }, []);
 
   // =============================================
-  // HANDLERS
+  // RENDER — FINAL STANDINGS TABLE
   // =============================================
-  function handlePlayAgain() {
-    navigation.navigate('Home');
-  }
+  function renderStandings() {
+    if (!finalStats || finalStats.length === 0) return null;
 
-  function handleBackHome() {
-    navigation.navigate('Home');
+    const sorted = [...finalStats].sort((a, b) => a.position - b.position);
+
+    return (
+      <View style={styles.standingsContainer}>
+        <Text style={styles.standingsTitle}>Final standings</Text>
+
+        {sorted.map((player, index) => (
+          <View
+            key={player.id}
+            style={[
+              styles.standingRow,
+              player.name === playerName && styles.standingRowMe,
+              player.isWinner && styles.standingRowWinner,
+            ]}
+          >
+            {/* Position */}
+            <Text style={styles.standingPosition}>
+              {player.isWinner ? '🏆' : `#${player.position}`}
+            </Text>
+
+            {/* Name */}
+            <Text style={styles.standingName}>
+              {player.name}
+              {player.name === playerName ? ' (you)' : ''}
+            </Text>
+
+            {/* Pile remaining */}
+            <Text style={styles.standingPile}>
+              {player.pileCount === 0
+                ? '✅ Empty!'
+                : `${player.pileCount} cards left`}
+            </Text>
+          </View>
+        ))}
+      </View>
+    );
   }
 
   // =============================================
@@ -63,78 +94,75 @@ export default function ResultScreen({ navigation, route }) {
   // =============================================
   return (
     <SafeAreaView style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
 
-      {/* Background emoji pattern */}
-      <View style={styles.bgPattern}>
-        {['🃏', '♠', '♥', '♦', '♣'].map((emoji, i) => (
-          <Text key={i} style={[styles.bgEmoji, { opacity: 0.06 + i * 0.02 }]}>
-            {emoji}
+        {/* Background pattern */}
+        <View style={styles.bgPattern}>
+          {['🃏', '♠', '♥', '♦', '♣'].map((emoji, i) => (
+            <Text key={i} style={[styles.bgEmoji, { opacity: 0.06 + i * 0.02 }]}>
+              {emoji}
+            </Text>
+          ))}
+        </View>
+
+        {/* Winner card */}
+        <Animated.View style={[
+          styles.card,
+          { transform: [{ scale: scaleAnim }], opacity: opacityAnim }
+        ]}>
+
+          <Text style={styles.mainEmoji}>
+            {iWon ? '🏆' : '🃏'}
           </Text>
-        ))}
-      </View>
 
-      {/* Main content */}
-      <Animated.View style={[
-        styles.card,
-        { transform: [{ scale: scaleAnim }], opacity: opacityAnim }
-      ]}>
-
-        {/* Trophy or lose icon */}
-        <Text style={styles.mainEmoji}>
-          {iWon ? '🏆' : '🃏'}
-        </Text>
-
-        {/* Title */}
-        <Text style={styles.title}>
-          {iWon ? t('result.winner') : ''}
-        </Text>
-
-        {/* Winner name */}
-        <Text style={styles.winnerName}>
-          {winner?.name}
-        </Text>
-
-        {/* Subtitle */}
-        <Text style={styles.subtitle}>
-          {t('result.wins')}
-        </Text>
-
-        {/* Divider */}
-        <View style={styles.divider} />
-
-        {/* Stats */}
-        <Text style={styles.stats}>
-          {t('result.turnCount', { count: turnCount })}
-        </Text>
-
-        {/* Message from server */}
-        {message && (
-          <Text style={styles.message}>{message}</Text>
-        )}
-
-      </Animated.View>
-
-      {/* Buttons */}
-      <View style={styles.buttons}>
-        <TouchableOpacity
-          style={styles.playAgainButton}
-          onPress={handlePlayAgain}
-        >
-          <Text style={styles.playAgainText}>
-            🔄 {t('result.playAgain')}
+          <Text style={styles.title}>
+            {iWon ? t('result.winner') : ''}
           </Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.homeButton}
-          onPress={handleBackHome}
-        >
-          <Text style={styles.homeText}>
-            🏠 {t('result.backHome')}
+          <Text style={styles.winnerName}>{winner?.name}</Text>
+
+          <Text style={styles.subtitle}>{t('result.wins')}</Text>
+
+          <View style={styles.divider} />
+
+          <Text style={styles.stats}>
+            {t('result.turnCount', { count: turnCount })}
           </Text>
-        </TouchableOpacity>
-      </View>
 
+          {message && (
+            <Text style={styles.message}>{message}</Text>
+          )}
+
+        </Animated.View>
+
+        {/* Final standings */}
+        {renderStandings()}
+
+        {/* Buttons */}
+        <View style={styles.buttons}>
+          <TouchableOpacity
+            style={styles.playAgainButton}
+            onPress={() => navigation.navigate('Home')}
+          >
+            <Text style={styles.playAgainText}>
+              🔄 {t('result.playAgain')}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.homeButton}
+            onPress={() => navigation.navigate('Home')}
+          >
+            <Text style={styles.homeText}>
+              🏠 {t('result.backHome')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -147,16 +175,16 @@ function makeStyles(theme) {
     container: {
       flex:            1,
       backgroundColor: theme.background,
-      justifyContent:  'center',
-      alignItems:      'center',
-      padding:         24,
+    },
+    scrollContent: {
+      flexGrow:       1,
+      alignItems:     'center',
+      padding:        24,
+      gap:            20,
     },
     bgPattern: {
       position:       'absolute',
-      top:            0,
-      left:           0,
-      right:          0,
-      bottom:         0,
+      top:            0, left: 0, right: 0, bottom: 0,
       flexDirection:  'row',
       flexWrap:       'wrap',
       justifyContent: 'center',
@@ -183,7 +211,7 @@ function makeStyles(theme) {
       elevation:       8,
     },
     mainEmoji: {
-      fontSize:    72,
+      fontSize:     72,
       marginBottom: 8,
     },
     title: {
@@ -193,10 +221,10 @@ function makeStyles(theme) {
       letterSpacing: 1,
     },
     winnerName: {
-      fontSize:      32,
-      fontWeight:    'bold',
-      color:         theme.textPrimary,
-      marginTop:     4,
+      fontSize:   32,
+      fontWeight: 'bold',
+      color:      theme.textPrimary,
+      marginTop:  4,
     },
     subtitle: {
       fontSize: 16,
@@ -218,11 +246,59 @@ function makeStyles(theme) {
       textAlign: 'center',
       marginTop: 4,
     },
+    standingsContainer: {
+      width:           '100%',
+      maxWidth:        400,
+      backgroundColor: theme.backgroundCard,
+      borderRadius:    16,
+      padding:         16,
+      borderWidth:     1,
+      borderColor:     theme.border,
+      gap:             8,
+    },
+    standingsTitle: {
+      color:         theme.textSecondary,
+      fontSize:      13,
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+      marginBottom:  4,
+    },
+    standingRow: {
+      flexDirection:   'row',
+      alignItems:      'center',
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      borderRadius:    10,
+      backgroundColor: theme.background,
+      gap:             12,
+    },
+    standingRowMe: {
+      borderWidth: 1,
+      borderColor: theme.accent,
+    },
+    standingRowWinner: {
+      backgroundColor: '#fff9e6',
+    },
+    standingPosition: {
+      fontSize:   18,
+      fontWeight: 'bold',
+      width:      32,
+      textAlign:  'center',
+    },
+    standingName: {
+      flex:       1,
+      color:      theme.textPrimary,
+      fontSize:   15,
+      fontWeight: '600',
+    },
+    standingPile: {
+      color:    theme.textMuted,
+      fontSize: 13,
+    },
     buttons: {
-      width:     '100%',
-      maxWidth:  400,
-      marginTop: 32,
-      gap:       12,
+      width:    '100%',
+      maxWidth: 400,
+      gap:      12,
     },
     playAgainButton: {
       backgroundColor: theme.accent,

@@ -20,6 +20,7 @@ export default {
     joinButton: 'Unirse →',
     errorNoName: 'Por favor ingresa tu nombre antes de continuar.',
     errorNoCode: 'Por favor ingresa el código de sala.',
+    viewProfile: 'Ver mi perfil y estadísticas',
   },
 
   // --- HelpScreen ---
@@ -114,5 +115,26 @@ export default {
     continueAsGuest: 'Continuar como invitado',
     errorTitle: 'Error',
     welcomeBack: 'Bienvenido,',
+  },
+
+  // --- ProfileScreen ---
+  profile: {
+    title: 'Mi Perfil',
+    stats: 'Estadísticas',
+    history: 'Historial de partidas',
+    gamesPlayed: 'Partidas jugadas',
+    gamesWon: 'Partidas ganadas',
+    winRate: 'Porcentaje de victorias',
+    avgTurns: 'Turnos promedio',
+    bestGame: 'Mejor partida',
+    turns: 'turnos',
+    noHistory: 'Todavía no jugaste ninguna partida.',
+    position: 'Posición',
+    players: 'Jugadores',
+    date: 'Fecha',
+    notLoggedIn: 'Tienes que iniciar sesión para ver tu perfil.',
+    loading: 'Cargando perfil...',
+    winner: '🏆 Ganador',
+    guest: 'Jugador invitado',
   },
 };

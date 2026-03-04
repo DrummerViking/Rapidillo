@@ -3,7 +3,6 @@
 // =============================================
 
 require('dotenv').config();
-const { register, login } = require('./db/auth');
 
 const express = require('express');
 const http = require('http');
@@ -11,6 +10,10 @@ const { Server } = require('socket.io');
 
 const { roomHandler } = require('./sockets/roomHandler');
 const { gameHandler } = require('./sockets/gameHandler');
+
+const { register, login, verifyToken } = require('./db/auth');
+const { getUserStats, getUserGameHistory, getLeaderboard } = require('./db/queries');
+
 
 // =============================================
 // SERVER SETUP
@@ -91,6 +94,59 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
+// --- Middleware to verify JWT token ---
+function authMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'No token provided.' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  const result = verifyToken(token);
+
+  if (!result.valid) {
+    return res.status(401).json({ error: 'Invalid or expired token.' });
+  }
+
+  req.userId = result.userId;
+  req.username = result.username;
+  next();
+}
+
+// --- Profile routes ---
+
+// Get user stats
+app.get('/profile/stats', authMiddleware, async (req, res) => {
+  try {
+    const stats = await getUserStats(req.userId);
+    res.json({ stats });
+  } catch (err) {
+    console.error('Stats error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// Get user game history
+app.get('/profile/history', authMiddleware, async (req, res) => {
+  try {
+    const history = await getUserGameHistory(req.userId);
+    res.json({ history });
+  } catch (err) {
+    console.error('History error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// Get leaderboard (public — no auth required)
+app.get('/leaderboard', async (req, res) => {
+  try {
+    const leaderboard = await getLeaderboard();
+    res.json({ leaderboard });
+  } catch (err) {
+    console.error('Leaderboard error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
 // =============================================
 // SHARED GAME SESSIONS
 //
